@@ -25,14 +25,14 @@ namespace AppiumApp
             Init("", "");
         }
 
-        public static void Init(string appPackage, string appActivity, string deviceName = "Samsung Galaxy S9", bool noReset = true)
+        public static void Init(string appPackage, string appActivity, bool noReset = true, string deviceName = "Samsung A50")
         {
             var p = new Process
             {
                 StartInfo =
                 {
                     FileName = "cmd.exe",
-                    Arguments = "/C appium --address 127.0.0.1 --port 4723",
+                    Arguments = "/C appium --address 127.0.0.1 --port 4723 --relaxed-security",
                 }
             };
             p.Start();
@@ -78,6 +78,11 @@ namespace AppiumApp
         public static void RunCurrentApp()
         {
             driver.LaunchApp();
+        }
+
+        public static void RunApp(string appPackage, string appActivity)
+        {
+            driver.StartActivity(appPackage, appActivity);
         }
 
         public static void UploadImagesToDevice(string pcDir, bool shuffle)
@@ -223,7 +228,7 @@ namespace AppiumApp
         {
             if (wait == null)
             {
-                wait = new WebDriverWait(App.driver, TimeSpan.FromSeconds(seconds));
+                wait = new WebDriverWait(driver, TimeSpan.FromSeconds(seconds));
             }
 
             wait.Timeout = TimeSpan.FromSeconds(seconds);
@@ -232,11 +237,9 @@ namespace AppiumApp
 
         public static bool TryWaitElement(string xpath, int seconds = 10)
         {
-            bool isSuccess = false;
-
             if (wait == null)
             {
-                wait = new WebDriverWait(App.driver, TimeSpan.FromSeconds(seconds));
+                wait = new WebDriverWait(driver, TimeSpan.FromSeconds(seconds));
             }
 
             wait.Timeout = TimeSpan.FromSeconds(seconds);
@@ -247,10 +250,10 @@ namespace AppiumApp
             }
             catch
             {
-                return isSuccess;
+                return false;
             }
 
-            return isSuccess = true;
+            return true;
         }
 
         public static void Scroll(int fromX, int fromY, int toX, int toY)

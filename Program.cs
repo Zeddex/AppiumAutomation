@@ -12,7 +12,7 @@ Console.ForegroundColor = ConsoleColor.DarkGray;
 Console.WriteLine($"Enter clones amount:");
 while (!int.TryParse(Console.ReadLine(), out appsAmount)) { }
 
-Console.WriteLine("\nStarting Appium...");
+Console.WriteLine("Starting Appium...");
 
 App.Init(appPackage, appActivity);
 
