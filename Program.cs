@@ -6,32 +6,13 @@ using AdvancedSharpAdbClient.DeviceCommands;
 string appPackage = "com.applisto.appcloner";
 string appActivity = "com.applisto.appcloner.activity.MainActivity";
 
-//AnsiConsole.MarkupLine("[underline blue]Select device:[/]");
+Device device = new Device();
 
-string currentDevice = SelectDevice();
+string currentDevice = device.SelectDevice();
+int port = device.GetFreePort();
 
-string SelectDevice()
-{
-    var devicesList = Adb.ListOfDevices();
+App.Init(appPackage, appActivity, currentDevice, port);
 
-    var device = AnsiConsole.Prompt(
-        new SelectionPrompt<string>()
-            .Title("[underline blue]Select device:[/]")
-            .PageSize(10)
-            .AddChoices(devicesList));
-
-    return device;
-}
-
-
-
-
-Thread.Sleep(1000);
-
-//App.Init(appPackage, appActivity);
-App.Init();
-
-Thread.Sleep(1000);
 Console.WriteLine();
 
 App.CloseApp();

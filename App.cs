@@ -13,6 +13,8 @@ using System.Net;
 using OpenQA.Selenium.Support.Extensions;
 using OpenQA.Selenium.Interactions;
 using System.Collections.ObjectModel;
+using System.Net.NetworkInformation;
+using Spectre.Console;
 
 namespace AppiumApp
 {
@@ -24,11 +26,13 @@ namespace AppiumApp
 
         public static void Init()
         {
-            Init("", "");
+            Init("", "" , "");
         }
 
-        public static void Init(string appPackage, string appActivity, int port = 4723, bool noReset = true, string deviceName = "Samsung A50")
+        public static void Init(string appPackage, string appActivity, string udid, int port = 4723, bool noReset = true, string deviceName = "Samsung A50")
         {
+            Console.WriteLine("Starting appium...\n");
+
             var p = new Process
             {
                 StartInfo =
@@ -40,7 +44,7 @@ namespace AppiumApp
             p.Start();
 
             // check appium server is started
-            var request = WebRequest.Create($"http://127.0.0.1:{port}/wd/hub/sessions");
+            var request = WebRequest.Create($"http://127.0.0.1:{port}/sessions");
             request.Method = "HEAD";
             WebResponse? response = null;
 
@@ -52,47 +56,7 @@ namespace AppiumApp
                 }
                 catch { }
 
-                Thread.Sleep(1000);
-            }
-
-            options = new AppiumOptions();
-            options.PlatformName = "Android";
-            options.AddAdditionalCapability("appium:automationName", "UiAutomator2");
-            options.AddAdditionalCapability("appium:noReset", noReset);
-            options.AddAdditionalCapability("appium:deviceName", deviceName);
-            options.AddAdditionalCapability("appium:appPackage", appPackage);
-            options.AddAdditionalCapability("appium:appActivity", appActivity);
-            options.AddAdditionalCapability("appium:newCommandTimeout", 3000);
-
-            driver = new AndroidDriver<IWebElement>(new Uri($"http://127.0.0.1:{port}/wd/hub"), options);
-        }
-
-        public static void InitMulti(string appPackage, string appActivity, string udid, int port = 4723, bool noReset = true, string deviceName = "Samsung A50")
-        {
-            var p = new Process
-            {
-                StartInfo =
-                {
-                    FileName = "cmd.exe",
-                    Arguments = $"/C appium --address 127.0.0.1 --port {port} --relaxed-security --log-level error",
-                }
-            };
-            p.Start();
-
-            // check appium server is started
-            var request = WebRequest.Create($"http://127.0.0.1:{port}/wd/hub/sessions");
-            request.Method = "HEAD";
-            WebResponse? response = null;
-
-            while (response == null)
-            {
-                try
-                {
-                    response = request.GetResponse();
-                }
-                catch { }
-
-                Thread.Sleep(1000);
+                Thread.Sleep(500);
             }
 
             options = new AppiumOptions();
@@ -105,7 +69,28 @@ namespace AppiumApp
             options.AddAdditionalCapability("appium:appActivity", appActivity);
             options.AddAdditionalCapability("appium:newCommandTimeout", 3000);
 
-            driver = new AndroidDriver<IWebElement>(new Uri($"http://127.0.0.1:{port}/wd/hub"), options);
+            Uri url = new Uri($"http://127.0.0.1:{port}");
+
+            driver = new AndroidDriver<IWebElement>(url, options);
+        }
+
+        public static bool isPortAvailable(int port)
+        {
+            bool isPortAvailable = true;
+
+            var ipGlobalProperties = IPGlobalProperties.GetIPGlobalProperties();
+            TcpConnectionInformation[] tcpConnInfoArray = ipGlobalProperties.GetActiveTcpConnections();
+
+            foreach (TcpConnectionInformation tcpi in tcpConnInfoArray)
+            {
+                if (tcpi.LocalEndPoint.Port == port)
+                {
+                    isPortAvailable = false;
+                    break;
+                }
+            }
+
+            return isPortAvailable;
         }
 
         public static void CloseApp()
