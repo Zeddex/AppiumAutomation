@@ -7,6 +7,8 @@ using System.Text;
 using System.Threading.Tasks;
 using Newtonsoft.Json.Linq;
 using System.Security.Cryptography;
+using AdvancedSharpAdbClient.DeviceCommands;
+using AdvancedSharpAdbClient;
 
 namespace AppiumApp
 {
@@ -29,7 +31,7 @@ namespace AppiumApp
 
         public static KeyCode DigitToKeyCodeConvert(int digit)
         {
-            var keyCode = (KeyCode)Enum.Parse(typeof(KeyCode), $"KeyCode_{digit}");
+            var keyCode = (KeyCode)Enum.Parse(typeof(KeyCode), $"KEYCODE_{digit}");
 
             return keyCode;
         }
@@ -89,5 +91,12 @@ namespace AppiumApp
                 return Convert.ToHexString(hashBytes);
             }
         }
+		
+		public static void WriteTerminalLog(string text)
+		{
+			Console.ForegroundColor = ConsoleColor.Green;
+			Console.WriteLine(text);
+			Console.ResetColor();
+		}
     }
 }
