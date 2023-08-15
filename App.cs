@@ -132,6 +132,22 @@ namespace AppiumApp
         }
 
         /// <summary>
+        /// Input text by symbol
+        /// </summary>
+        /// <param name="text"></param>
+        /// <param name="pause">Pause between each symbol (in milleseconds)</param>
+        public static void InputTextBySymbol(string text, int pause = 0)
+        {
+            Actions action = new Actions(driver);
+
+            foreach (var symbol in text)
+            {
+                InputText(symbol.ToString());
+                Thread.Sleep(pause);
+            }
+        }
+
+        /// <summary>
         /// Upload images to device from PC
         /// </summary>
         /// <param name="pcDir">path to img directory on computer within working directory</param>
@@ -403,25 +419,18 @@ namespace AppiumApp
             return true;
         }
 
-        public static void Scroll(int fromX, int fromY, int toX, int toY)
-        {
-            var action = new TouchAction(driver);
-
-            action.LongPress(fromX, fromY)
-                .MoveTo(toX, toY)
-                .Release()
-                .Perform();
-        }
-
-        public static void SwipeRandom(int fromX, int fromY, int maxOffsetX, int maxOffsetY)
+        public static void SwipeRandom(int fromX, int fromY, int maxOffsetFromX, int maxOffsetFromY, int maxOffsetToX, int maxOffsetToY)
         {
             var rnd = new Random();
 
             var action = new TouchAction(driver);
 
+            fromX += rnd.Next(-maxOffsetFromX, maxOffsetFromX);
+            fromY += rnd.Next(-maxOffsetFromY, maxOffsetFromY);
+
             action.Press(fromX, fromY)
                 .Wait(500)
-                .MoveTo(fromX + rnd.Next(-maxOffsetX, maxOffsetX), fromY + rnd.Next(-maxOffsetY, maxOffsetY))
+                .MoveTo(fromX + rnd.Next(-maxOffsetToX, maxOffsetToX), fromY + rnd.Next(-maxOffsetToY, maxOffsetToY))
                 .Release()
                 .Perform();
         }
@@ -433,6 +442,39 @@ namespace AppiumApp
             action.Press(fromX, fromY)
                 .Wait(500)
                 .MoveTo(toX, toY)
+                .Release()
+                .Perform();
+        }
+
+        public static void SwipeElement(string elementXpath, int toX, int toY)
+        {
+            var element = driver.FindElementByXPath(elementXpath);
+            var action = new TouchAction(driver);
+
+            action.Press(element)
+                .Wait(500)
+                .MoveTo(toX, toY)
+                .Release()
+                .Perform();
+        }
+
+        public static void SwipeElementRandomOffset(string elementXpath, int maxOffsetToX, int maxOffsetToY)
+        {
+            var element = driver.FindElementByXPath(elementXpath);
+            int xLeft = element.Location.X;
+            int xRight = xLeft + element.Size.Width;
+            int xMiddle = (xLeft + xRight) / 2;
+            int yUpper = element.Location.Y;
+            int yLower = yUpper + element.Size.Height;
+            int yMiddle = (yUpper + yLower) / 2;
+
+            var action = new TouchAction(driver);
+
+            var rnd = new Random();
+
+            action.Press(element)
+                .Wait(500)
+                .MoveTo(xMiddle + rnd.Next(-maxOffsetToX, maxOffsetToX), yMiddle + rnd.Next(-maxOffsetToY, maxOffsetToY))
                 .Release()
                 .Perform();
         }
@@ -514,7 +556,11 @@ namespace AppiumApp
 
         #region AdbCommands
 
-		public static void AdbKeyboardInputText(string text)
+        /// <summary>
+        /// Input text using virtual keyboard (ADBKeyboard)
+        /// </summary>
+        /// <param name="text"></param>
+        public static void AdbKeyboardInputText(string text)
 		{
 			ExecuteAdbShellCommand($"adb shell am broadcast -a ADB_INPUT_TEXT --es msg '{text}'");
 		}

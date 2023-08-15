@@ -228,7 +228,6 @@ D:\Coding\_Sandbox\C#\Android\AppiumApp\bin\Release\net6.0\win-x64\dbgshim.dll
 D:\Coding\_Sandbox\C#\Android\AppiumApp\bin\Release\net6.0\win-x64\hostfxr.dll
 D:\Coding\_Sandbox\C#\Android\AppiumApp\bin\Release\net6.0\win-x64\hostpolicy.dll
 D:\Coding\_Sandbox\C#\Android\AppiumApp\bin\Release\net6.0\win-x64\mscordaccore.dll
-D:\Coding\_Sandbox\C#\Android\AppiumApp\bin\Release\net6.0\win-x64\mscordaccore_amd64_amd64_6.0.1523.11507.dll
 D:\Coding\_Sandbox\C#\Android\AppiumApp\bin\Release\net6.0\win-x64\mscordbi.dll
 D:\Coding\_Sandbox\C#\Android\AppiumApp\bin\Release\net6.0\win-x64\mscorrc.dll
 D:\Coding\_Sandbox\C#\Android\AppiumApp\bin\Release\net6.0\win-x64\msquic.dll
@@ -244,3 +243,7 @@ D:\Coding\_Sandbox\C#\Android\AppiumApp\obj\Release\net6.0\win-x64\refint\Appium
 D:\Coding\_Sandbox\C#\Android\AppiumApp\obj\Release\net6.0\win-x64\AppiumApp.pdb
 D:\Coding\_Sandbox\C#\Android\AppiumApp\obj\Release\net6.0\win-x64\AppiumApp.genruntimeconfig.cache
 D:\Coding\_Sandbox\C#\Android\AppiumApp\obj\Release\net6.0\win-x64\ref\AppiumApp.dll
+D:\Coding\_Sandbox\C#\Android\AppiumApp\bin\Release\net6.0\win-x64\AdvancedSharpAdbClient.dll
+D:\Coding\_Sandbox\C#\Android\AppiumApp\bin\Release\net6.0\win-x64\Microsoft.Extensions.Logging.Abstractions.dll
+D:\Coding\_Sandbox\C#\Android\AppiumApp\bin\Release\net6.0\win-x64\Spectre.Console.dll
+D:\Coding\_Sandbox\C#\Android\AppiumApp\bin\Release\net6.0\win-x64\mscordaccore_amd64_amd64_6.0.1623.17311.dll

@@ -3,8 +3,8 @@ using AppiumApp;
 using Spectre.Console;
 using AdvancedSharpAdbClient.DeviceCommands;
 
-string appPackage = "com.applisto.appcloner";
-string appActivity = "com.applisto.appcloner.activity.MainActivity";
+string appPackage = "com.sec.android.app.popupcalculator";
+string appActivity = "com.sec.android.app.popupcalculator.Caculator";
 
 Device device = new Device();
 
@@ -13,6 +13,6 @@ int port = device.GetFreePort();
 
 App.Init(appPackage, appActivity, currentDevice, port);
 
-Console.WriteLine();
+Console.ReadLine();
 
 App.CloseApp();
