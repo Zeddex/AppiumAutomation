@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.NetworkInformation;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -29,13 +30,34 @@ namespace AppiumApp
 
             do
             {
-                isPortAvailable = App.isPortAvailable(startingPort);
+                isPortAvailable = IsPortAvailable(startingPort);
                 freePort = startingPort;
                 startingPort++;
 
             } while (!isPortAvailable);
 
             return freePort;
+        }
+
+        public static bool IsPortAvailable(int port)
+        {
+            Thread.Sleep(7000);
+
+            bool isPortAvailable = true;
+
+            var ipGlobalProperties = IPGlobalProperties.GetIPGlobalProperties();
+            TcpConnectionInformation[] tcpConnInfoArray = ipGlobalProperties.GetActiveTcpConnections();
+
+            foreach (TcpConnectionInformation tcpi in tcpConnInfoArray)
+            {
+                if (tcpi.LocalEndPoint.Port == port)
+                {
+                    isPortAvailable = false;
+                    break;
+                }
+            }
+
+            return isPortAvailable;
         }
     }
 }

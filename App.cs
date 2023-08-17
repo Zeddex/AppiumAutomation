@@ -9,12 +9,9 @@ using OpenQA.Selenium.Appium;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Appium.MultiTouch;
 using OpenQA.Selenium.Support.UI;
-using System.Net;
 using OpenQA.Selenium.Support.Extensions;
 using OpenQA.Selenium.Interactions;
 using System.Collections.ObjectModel;
-using System.Net.NetworkInformation;
-using Spectre.Console;
 
 namespace AppiumApp
 {
@@ -29,7 +26,7 @@ namespace AppiumApp
             Init("", "" , "");
         }
 
-        public static void Init(string appPackage, string appActivity, string udid, int port = 4723, bool noReset = true, string deviceName = "Samsung A50")
+        public static async void Init(string appPackage, string appActivity, string udid, int port = 4723, bool noReset = true, string deviceName = "Samsung A50")
         {
             Console.WriteLine("Starting appium...\n");
 
@@ -44,15 +41,15 @@ namespace AppiumApp
             p.Start();
 
             // check appium server is started
-            var request = WebRequest.Create($"http://127.0.0.1:{port}/sessions");
-            request.Method = "HEAD";
-            WebResponse? response = null;
+            var client = new HttpClient();
+            string sessionUrl = $@"http://127.0.0.1:{port}/sessions";
+            HttpResponseMessage result = null; 
 
-            while (response == null)
+            while (result == null)
             {
                 try
                 {
-                    response = request.GetResponse();
+                    result = client.SendAsync(new HttpRequestMessage(HttpMethod.Head, sessionUrl)).Result;
                 }
                 catch { }
 
@@ -72,25 +69,6 @@ namespace AppiumApp
             Uri url = new Uri($"http://127.0.0.1:{port}");
 
             driver = new AndroidDriver<IWebElement>(url, options);
-        }
-
-        public static bool isPortAvailable(int port)
-        {
-            bool isPortAvailable = true;
-
-            var ipGlobalProperties = IPGlobalProperties.GetIPGlobalProperties();
-            TcpConnectionInformation[] tcpConnInfoArray = ipGlobalProperties.GetActiveTcpConnections();
-
-            foreach (TcpConnectionInformation tcpi in tcpConnInfoArray)
-            {
-                if (tcpi.LocalEndPoint.Port == port)
-                {
-                    isPortAvailable = false;
-                    break;
-                }
-            }
-
-            return isPortAvailable;
         }
 
         public static void CloseApp()
