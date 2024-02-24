@@ -5,14 +5,16 @@ string appPackage = "";
 string appActivity = "";
 
 Device device = new Device();
-Logger logger = new Logger();
 
 string currentDevice = device.SelectDevice();
 int port = device.GetFreePort();
 
-App.Init(appPackage, appActivity, currentDevice, port);
+App app = new App(appPackage, appActivity, currentDevice, port);
+TargetApp targetApp = new TargetApp();
+Logger logger = new Logger();
+app.Start();
 
 Console.WriteLine($"\nSession has been started. Device {currentDevice} on port {port}");
 Console.ReadLine();
 
-App.CloseApp();
+app.CloseApp();

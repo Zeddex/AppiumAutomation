@@ -15,18 +15,28 @@ using System.Collections.ObjectModel;
 
 namespace AppiumApp
 {
-    public static class App
+    public class App
     {
-        private static AppiumOptions options;
-        public static AndroidDriver<IWebElement> driver;
-        public static WebDriverWait wait;
+        public string AppPackage { get; set; }
+        public string AppActivity { get; set; }
+        public string Udid { get; set; }
+        public int Port { get; set; } = 4723;
+        public AppiumOptions options { get; set; }
+        public AndroidDriver<IWebElement> driver { get; set; }
+        public WebDriverWait wait { get; set; }
 
-        public static void Init()
+        public App() : this("", "", "", 4723)
+        { }
+
+        public App(string appPackage, string appActivity, string udid, int port)
         {
-            Init("", "" , "");
+            AppPackage = appPackage;
+            AppActivity = appActivity;
+            Udid = udid;
+            Port = port;
         }
 
-        public static async void Init(string appPackage, string appActivity, string udid, int port = 4723, bool noReset = true, string deviceName = "Samsung A50")
+        public void Start()
         {
             Console.WriteLine("Starting appium...\n");
 
@@ -35,15 +45,15 @@ namespace AppiumApp
                 StartInfo =
                 {
                     FileName = "cmd.exe",
-                    Arguments = $"/C appium --address 127.0.0.1 --port {port} --relaxed-security --log-level error",
+                    Arguments = $"/C appium --address 127.0.0.1 --port {Port} --relaxed-security --log-level error",
                 }
             };
             p.Start();
 
             // check appium server is started
             var client = new HttpClient();
-            string sessionUrl = $@"http://127.0.0.1:{port}/sessions";
-            HttpResponseMessage result = null; 
+            string sessionUrl = $@"http://127.0.0.1:{Port}/sessions";
+            HttpResponseMessage result = null;
 
             while (result == null)
             {
@@ -56,22 +66,23 @@ namespace AppiumApp
                 Thread.Sleep(500);
             }
 
+            Console.WriteLine("\nAppium has been started\n");
+
             options = new AppiumOptions();
             options.PlatformName = "Android";
             options.AddAdditionalCapability("appium:automationName", "UiAutomator2");
-            options.AddAdditionalCapability("appium:noReset", noReset);
-            options.AddAdditionalCapability("appium:udid", udid);
-            options.AddAdditionalCapability("appium:deviceName", deviceName);
-            options.AddAdditionalCapability("appium:appPackage", appPackage);
-            options.AddAdditionalCapability("appium:appActivity", appActivity);
+            options.AddAdditionalCapability("appium:noReset", "true");
+            options.AddAdditionalCapability("appium:deviceName", "Samsung A50");
+            options.AddAdditionalCapability("appium:udid", Udid);
+            options.AddAdditionalCapability("appium:appPackage", AppPackage);
+            options.AddAdditionalCapability("appium:appActivity", AppActivity);
             options.AddAdditionalCapability("appium:newCommandTimeout", 3000);
 
-            Uri url = new Uri($"http://127.0.0.1:{port}");
-
+            Uri url = new Uri($@"http://127.0.0.1:{Port}");
             driver = new AndroidDriver<IWebElement>(url, options);
         }
 
-        public static void CloseApp()
+        public void CloseApp()
         {
             driver.CloseApp();
 
@@ -81,29 +92,29 @@ namespace AppiumApp
             }
         }
 
-        public static void RunCurrentApp()
+        public void RunCurrentApp()
         {
             driver.LaunchApp();
         }
 
-        public static void RunApp(string appPackage, string appActivity)
+        public void RunApp(string appPackage, string appActivity)
         {
             driver.StartActivity(appPackage, appActivity);
         }
 		
-		public static void SetContext(string context = "NATIVE_APP")
+		public void SetContext(string context = "NATIVE_APP")
 		{
 			driver.Context = context.ToString();
 		}
 
-		public static List<string> GetContexts()
+		public List<string> GetContexts()
 		{
 			var contexts = driver.Contexts.ToList();
 
 			return contexts;
 		}
 		
-		public static void InputText(string text)
+		public void InputText(string text)
         {
             Actions action = new Actions(driver);
             action.SendKeys(text).Perform();
@@ -114,7 +125,7 @@ namespace AppiumApp
         /// </summary>
         /// <param name="text"></param>
         /// <param name="pause">Pause between each symbol (in milleseconds)</param>
-        public static void InputTextBySymbol(string text, int pause = 0)
+        public void InputTextBySymbol(string text, int pause = 0)
         {
             Actions action = new Actions(driver);
 
@@ -132,7 +143,7 @@ namespace AppiumApp
         /// <param name="shuffle">mix images before uploading</param>
         /// <param name="deleteAfterUpload">delete photos from pc after uploading</param>
         /// <param name="amount">0 for all photos uploading</param>
-        public static void UploadImagesToDevice(string pcDir, bool shuffle, bool deleteAfterUpload, int amount = 0)
+        public void UploadImagesToDevice(string pcDir, bool shuffle, bool deleteAfterUpload, int amount = 0)
         {
             string currentDir = Directory.GetCurrentDirectory();
             string inputDir = currentDir + pcDir;
@@ -145,17 +156,15 @@ namespace AppiumApp
             if (shuffle)
             {
                 int filesAmount = dir.GetFiles().Length;
-                var rndFilesList = Extension.GetRndNumbersFromRange(0, filesAmount, filesAmount);
+                var rndFilesList = Extension.GetRndNumbersFromRange(0, filesAmount, amount);
 
-                foreach (var file in dir.GetFiles())
+                for (int i = 0; i < rndFilesList.Count; i++)
                 {
                     ++filesCount;
-                    driver.PushFile($"{androidDir}{rndFilesList[filesCount]}.jpeg", file);
 
-                    if (filesCount == amount)
-                    {
-                        break;
-                    }
+                    int rndFileIndex = rndFilesList[i];
+                    var currentFile = dir.GetFiles()[rndFileIndex];
+                    driver.PushFile($"{androidDir}{filesCount}.jpeg", currentFile);
                 }
             }
 
@@ -193,12 +202,12 @@ namespace AppiumApp
         /// <summary>
         /// Delete images from Download dir
         /// </summary>
-        public static void DeleteImagesFromDevice()
+        public void DeleteImagesFromDevice()
         {
             ExecuteAdbShellCommand($"adb shell cd /storage/emulated/0/Download && rm -rf *.jpeg && rm -rf *.jpg");
         }
 
-        public static string TakeElementScreenshot(string xpath)
+        public string TakeElementScreenshot(string xpath)
         {
             var el = driver.FindElementByXPath(xpath);
 
@@ -215,7 +224,7 @@ namespace AppiumApp
             return croppedImg64;
         }
 
-        public static void TakeScreenshot()
+        public void TakeScreenshot()
         {
             var scr = driver.TakeScreenshot();
 
@@ -224,12 +233,12 @@ namespace AppiumApp
             scr.SaveAsFile(filePath);
         }
 		
-		public static void TakeScreenshotSystem()
+		public void TakeScreenshotSystem()
 		{
 			ExecuteKeyCode(KeyCode.KEYCODE_SYSRQ);
 		}
 
-        public static string TakeScreenshotByCoord(int topX, int topY, int bottomX, int bottomY)
+        public string TakeScreenshotByCoord(int topX, int topY, int bottomX, int bottomY)
         {
             int x = topX;
             int y = topY;
@@ -244,7 +253,7 @@ namespace AppiumApp
             return croppedImg64;
         }
 
-        public static int FindElementsAmount(string xPath)
+        public int FindElementsAmount(string xPath)
         {
             var elementsList = driver.FindElementsByXPath(xPath);
 
@@ -255,7 +264,7 @@ namespace AppiumApp
 
         #region App Navigation
 
-        public static string GetElementText(string xpath)
+        public string GetElementText(string xpath)
         {
             try
             {
@@ -270,7 +279,7 @@ namespace AppiumApp
             }
         }
 
-        public static string TryGetElementText(string xpath)
+        public string TryGetElementText(string xpath)
         {
             string result = string.Empty;
 
@@ -287,12 +296,12 @@ namespace AppiumApp
             }
         }
 
-        public static void Click(string xpath)
+        public void Click(string xpath)
         {
             driver.FindElementByXPath(xpath).Click();
         }
 
-        public static void TryClick(string xpath)
+        public void TryClick(string xpath)
         {
             try
             {
@@ -301,14 +310,14 @@ namespace AppiumApp
             catch { }
         }
 
-        public static void ClickCoordinates(int x, int y)
+        public void ClickCoordinates(int x, int y)
         {
             var action = new TouchAction(driver);
 
             action.Tap(x, y).Perform();
         }
 
-        public static void WaitAndClick(string xpath, int seconds = 10)
+        public void WaitAndClick(string xpath, int seconds = 10)
         {
             WaitElement(xpath, seconds);
 
@@ -323,7 +332,7 @@ namespace AppiumApp
             }
         }
 
-        public static bool FindElement(string xpath)
+        public bool FindElement(string xpath)
         {
             IWebElement element = null;
 
@@ -344,7 +353,7 @@ namespace AppiumApp
             return found;
         }
 
-        public static bool FindElements(string xpath)
+        public bool FindElements(string xpath)
         {
             bool found = false;
 
@@ -358,14 +367,14 @@ namespace AppiumApp
             return found;
         }
 
-        public static ReadOnlyCollection<IWebElement> GetElementsCollection(string xpath)
+        public ReadOnlyCollection<IWebElement> GetElementsCollection(string xpath)
         {
             var elements = driver.FindElementsByXPath(xpath);
 
             return elements;
         }
 
-        public static void WaitElement(string xpath, int seconds = 10)
+        public void WaitElement(string xpath, int seconds = 10)
         {
             if (wait == null)
             {
@@ -376,7 +385,7 @@ namespace AppiumApp
             wait.Until(ExpectedConditions.PresenceOfAllElementsLocatedBy(By.XPath(xpath)));
         }
 
-        public static bool TryWaitElement(string xpath, int seconds = 10)
+        public bool TryWaitElement(string xpath, int seconds = 10)
         {
             if (wait == null)
             {
@@ -397,7 +406,7 @@ namespace AppiumApp
             return true;
         }
 
-        public static void SwipeRandom(int fromX, int fromY, int maxOffsetFromX, int maxOffsetFromY, int maxOffsetToX, int maxOffsetToY)
+        public void SwipeRandom(int fromX, int fromY, int maxOffsetFromX, int maxOffsetFromY, int maxOffsetToX, int maxOffsetToY)
         {
             var rnd = new Random();
 
@@ -413,7 +422,7 @@ namespace AppiumApp
                 .Perform();
         }
 
-        public static void Swipe(int fromX, int fromY, int toX, int toY)
+        public void Swipe(int fromX, int fromY, int toX, int toY)
         {
             var action = new TouchAction(driver);
 
@@ -424,7 +433,7 @@ namespace AppiumApp
                 .Perform();
         }
 
-        public static void SwipeElement(string elementXpath, int toX, int toY)
+        public void SwipeElement(string elementXpath, int toX, int toY)
         {
             var element = driver.FindElementByXPath(elementXpath);
             var action = new TouchAction(driver);
@@ -436,7 +445,7 @@ namespace AppiumApp
                 .Perform();
         }
 
-        public static void SwipeElementRandomOffset(string elementXpath, int maxOffsetToX, int maxOffsetToY)
+        public void SwipeElementRandomOffset(string elementXpath, int maxOffsetToX, int maxOffsetToY)
         {
             var element = driver.FindElementByXPath(elementXpath);
             int xLeft = element.Location.X;
@@ -457,7 +466,7 @@ namespace AppiumApp
                 .Perform();
         }
 
-        public static void SwipeCenterLeft(int x = 540, int y = 900)
+        public void SwipeCenterLeft(int x = 540, int y = 900)
         {
             var action = new TouchAction(driver);
 
@@ -468,7 +477,7 @@ namespace AppiumApp
                 .Perform();
         }
 
-        public static void SwipeCenterRight(int x = 540, int y = 900)
+        public void SwipeCenterRight(int x = 540, int y = 900)
         {
             var action = new TouchAction(driver);
 
@@ -479,7 +488,7 @@ namespace AppiumApp
                 .Perform();
         }
 		
-		public static void MoveSlider(string elementXpath, int xAxisEndPoint)
+		public void MoveSlider(string elementXpath, int xAxisEndPoint)
         {
             var slider = driver.FindElementByXPath(elementXpath);
             int xAxisStartPoint = slider.Location.X;
@@ -494,7 +503,7 @@ namespace AppiumApp
                 .Perform();
         }
 
-		public static (int xLeft, int yUpper, int xRight, int yLower) GetElementCoord(string elementXpath)
+		public (int xLeft, int yUpper, int xRight, int yLower) GetElementCoord(string elementXpath)
         {
             var element = driver.FindElementByXPath(elementXpath);
 
@@ -508,23 +517,34 @@ namespace AppiumApp
             return (xLeft, yUpper, xRight, yLower);
         }
 
-        public static void SendText(string xpath, string text)
+        public void SendText(string xpath, string text)
         {
             driver.FindElementByXPath(xpath).SendKeys(text);
         }
 
-        public static void ClearField(string xpath)
+        public void ClearField(string xpath)
         {
             driver.FindElementByXPath(xpath).Clear();
         }
 
-        public static void PressDigitKey(int digit)
+        public void PressDigitKey(int digit)
         {
             var digitCode = Extension.DigitToKeyCodeConvert(digit);
             driver.PressKeyCode((int)digitCode);
         }
 
-        public static void ExecuteKeyCode(KeyCode keyCode)
+        public void EnterNumberOnDigitPad(int number)
+        {
+            int[] digits = number.ToString().Select(digit => int.Parse(digit.ToString())).ToArray();
+
+            foreach (var digit in digits)
+            {
+                var digitCode = Extension.DigitToKeyCodeConvert(digit);
+                driver.PressKeyCode((int)digitCode);
+            }
+        }
+
+        public void ExecuteKeyCode(KeyCode keyCode)
         {
             driver.PressKeyCode((int)keyCode);
         }
@@ -538,24 +558,24 @@ namespace AppiumApp
         /// Input text using virtual keyboard (ADBKeyboard)
         /// </summary>
         /// <param name="text"></param>
-        public static void AdbKeyboardInputText(string text)
+        public void AdbKeyboardInputText(string text)
 		{
 			ExecuteAdbShellCommand($"adb shell am broadcast -a ADB_INPUT_TEXT --es msg '{text}'");
 		}
 
-		public static void AdbInputText(string text)
+		public void AdbInputText(string text)
 		{
 			ExecuteAdbShellCommand($"adb shell input text '{text}'");
 		}
 
-        public static void ExecuteAdbShellCommand(string adbShellCommand)
+        public void ExecuteAdbShellCommand(string adbShellCommand)
         {
             var args = AdbConvertToAppium(adbShellCommand);
 
             var output = driver.ExecuteScript("mobile: shell", args);
         }
 
-        public static string AdbCurrentActivity()
+        public string AdbCurrentActivity()
         {
             var argv = new Dictionary<string, object>();
 
@@ -566,28 +586,28 @@ namespace AppiumApp
             return result;
         }
 
-        public static void ToggleAirplaneMode()
+        public void ToggleAirplaneMode()
         {
             driver.ToggleAirplaneMode();
 
             Thread.Sleep(2000);
         }
 
-        public static void ToggleMobileData()
+        public void ToggleMobileData()
         {
             driver.ToggleData();
 
             Thread.Sleep(2000);
         }
 
-        public static void AdbToggleWifi()
+        public void AdbToggleWifi()
         {
             driver.ToggleWifi();
 
             Thread.Sleep(3000);
         }
 
-        private static Dictionary<string, object> AdbConvertToAppium(string adbShellCommand)
+        private Dictionary<string, object> AdbConvertToAppium(string adbShellCommand)
         {
             var map = new Dictionary<string, object>();
             var parameters = new List<string>();

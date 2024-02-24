@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("AppiumApp")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+37cb2d3e9d1abac3234218398072eb5c0de58888")]
 [assembly: System.Reflection.AssemblyProductAttribute("AppiumApp")]
 [assembly: System.Reflection.AssemblyTitleAttribute("AppiumApp")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
